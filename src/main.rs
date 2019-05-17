@@ -17,7 +17,7 @@ fn main() {
 }
 
 struct Config {
-    levels: Vec<u32>,
+    levels: Vec<f32>,
     filenames: Vec<String>,
 }
 
@@ -26,10 +26,10 @@ impl Config {
         if args.len() < 2 {
             return Err("Not enough arguments".to_string());
         }
-        let mut levels = Vec::<u32>::new();
+        let mut levels = Vec::<f32>::new();
         for lvl in args[1].split(" ") {
             if lvl != "" {
-                let parsed = lvl.parse::<u32>();
+                let parsed = lvl.parse::<f32>();
                 let parsed = match parsed {
                     Ok(value) => value,
                     Err(_x) => { 
@@ -42,7 +42,7 @@ impl Config {
                 }
             }
         }
-        levels.sort();
+        levels.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         let mut filenames = Vec::<String>::new();
         if args.len() == 2 {
             return Ok(Config {levels, filenames});
@@ -60,7 +60,7 @@ impl Config {
     }
 }
 
-fn modify_filename(filename: &String, coverage: &u32) -> String {
+fn modify_filename(filename: &String, coverage: &f32) -> String {
     let mut pieces: Vec<String> = filename.split(".").map(|string| string.to_string()).collect();
     pieces.insert(pieces.len()-1, coverage.to_string());
     pieces.join(".")
@@ -95,8 +95,8 @@ fn filter_coverage(config: &Config) -> std::io::Result<()> {
     Ok(())
 }
 
-fn check_cov(line: &String, cov: u32) -> Result<bool, String> {
+fn check_cov(line: &String, cov: f32) -> Result<bool, String> {
     let pieces:Vec<&str> = line.split_whitespace().collect();
-    let file_cov: u32 = pieces[4].parse().unwrap();
+    let file_cov: f32 = pieces[4].parse().unwrap();
     return Ok(file_cov >= cov);
 }
